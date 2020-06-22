@@ -11,7 +11,7 @@ function allLinksHaveTitles() {
   const visitors = Compiler.prototype.visitors;
   const original = visitors.link;
 
-  visitors.link = function(linkNode) {
+  visitors.link = function (linkNode) {
     return original.bind(this)({
       ...linkNode,
       title: linkNode.title || ""
@@ -28,7 +28,6 @@ const processor = unified()
     rule: "-",
     ruleSpaces: false
   })
-  .use(allLinksHaveTitles)
-  .use(RemarkWikiLink);
+  .use(allLinksHaveTitles);
 
 export default processor;

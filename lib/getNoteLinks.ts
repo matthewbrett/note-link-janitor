@@ -22,6 +22,7 @@ function isBlockContent(node: MDAST.Content): node is MDAST.BlockContent {
 
 export interface NoteLinkEntry {
   targetTitle: string;
+  link: MDAST.Link;
   context: MDAST.BlockContent | null;
 }
 
@@ -30,6 +31,7 @@ export default function getNoteLinks(tree: MDAST.Root): NoteLinkEntry[] {
   const backlinksInfo = getBacklinksBlock(tree);
   let searchedChildren: UNIST.Node[];
   if (backlinksInfo.isPresent) {
+    console.log("Backlinks present");
     searchedChildren = tree.children
       .slice(
         0,
@@ -46,20 +48,22 @@ export default function getNoteLinks(tree: MDAST.Root): NoteLinkEntry[] {
     searchedChildren = tree.children;
   }
   const links: NoteLinkEntry[] = [];
-  visitParents<WikiLinkNode>(
+  visitParents<MDAST.Link>(
     { ...tree, children: searchedChildren } as MDAST.Parent,
-    "wikiLink",
-    (node: WikiLinkNode, ancestors: MDAST.Content[]) => {
+    "link",
+    (node: MDAST.Link, ancestors: MDAST.Content[]) => {
       const closestBlockLevelAncestor = ancestors.reduceRight<MDAST.BlockContent | null>(
         (result, needle) => result ?? (isBlockContent(needle) ? needle : null),
         null
       );
       links.push({
-        targetTitle: ((node as unknown) as WikiLinkNode).data.alias,
+        targetTitle: ((node as unknown) as MDAST.Link).url,
+        link: (node as unknown) as MDAST.Link,
         context: closestBlockLevelAncestor
       });
       return true;
     }
   );
+  console.log("NoteLinks %j", links);
   return links;
 }
